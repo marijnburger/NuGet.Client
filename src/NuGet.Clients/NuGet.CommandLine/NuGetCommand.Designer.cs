@@ -9015,7 +9015,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the server URL. If not specified, nuget.org is used unless DefaultPushSource config value is set in the NuGet config file..
+        ///   Looks up a localized string similar to Specifies the package source the package will be pushed to. This is a mandatory parameter unless the NuGet.Config file specifies a DefaultPushSource value..
         /// </summary>
         internal static string PushCommandSourceDescription {
             get {
