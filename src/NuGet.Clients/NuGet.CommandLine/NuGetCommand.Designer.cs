@@ -1814,7 +1814,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the server URL..
+        ///   Looks up a localized string similar to Specifies the package source the package is deleted from..
         /// </summary>
         internal static string DeleteCommandSourceDescription {
             get {

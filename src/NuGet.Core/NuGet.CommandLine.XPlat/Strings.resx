@@ -202,7 +202,7 @@
     <value>Specifies a NuGet package source to use during the restore.</value>
   </data>
   <data name="Source_Description" xml:space="preserve">
-    <value>Specifies the server URL</value>
+    <value>Specifies the package source.</value>
   </data>
   <data name="Switch_Verbosity" xml:space="preserve">
     <value>The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error.</value>

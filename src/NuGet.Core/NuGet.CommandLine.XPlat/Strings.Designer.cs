@@ -1275,7 +1275,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the server URL.
+        ///   Looks up a localized string similar to Specifies the package source..
         /// </summary>
         internal static string Source_Description {
             get {
