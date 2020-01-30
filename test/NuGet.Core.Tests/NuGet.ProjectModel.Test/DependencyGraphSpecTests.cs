@@ -125,7 +125,6 @@ namespace NuGet.ProjectModel.Test
             var dg = new DependencyGraphSpec(json);
 
             // Assert
-            Assert.Equal(json, dg.Json);
             Assert.Equal(0, dg.Restore.Count);
             Assert.Equal(0, dg.Projects.Count);
         }
@@ -137,7 +136,6 @@ namespace NuGet.ProjectModel.Test
             var dg = new DependencyGraphSpec();
 
             // Assert
-            Assert.Equal(0, dg.Json.Properties().Count());
             Assert.Equal(0, dg.Restore.Count);
             Assert.Equal(0, dg.Projects.Count);
         }

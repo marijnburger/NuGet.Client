@@ -36,8 +36,6 @@ namespace NuGet.ProjectModel
             }
 
             ParseJson(json);
-
-            Json = json;
         }
 
         public DependencyGraphSpec()
@@ -47,7 +45,6 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec(bool isReadOnly)
         {
-            Json = new JObject();
             _isReadOnly = isReadOnly;
         }
 
@@ -72,11 +69,6 @@ namespace NuGet.ProjectModel
                 return _projects.Values.ToList();
             }
         }
-
-        /// <summary>
-        /// File json.
-        /// </summary>
-        public JObject Json { get; }
 
         public PackageSpec GetProjectSpec(string projectUniqueName)
         {
