@@ -64,6 +64,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     // Consolidate tab is only available in solution package manager
                     _labelConsolidate.Visibility = Visibility.Collapsed;
+                    tabConsolidate.Visibility = Visibility.Collapsed;
 
                     // if consolidate tab is currently selected, we need to select another
                     // tab.
@@ -75,6 +76,7 @@ namespace NuGet.PackageManagement.UI
                 else
                 {
                     _labelConsolidate.Visibility = Visibility.Visible;
+                    tabConsolidate.Visibility = Visibility.Visible;
                 }
             }
         }
@@ -170,7 +172,10 @@ namespace NuGet.PackageManagement.UI
 
         private void TabsPackageManagement_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            FilterLabel_ControlSelected(sender, e);
+            var selectedTabItem = e.AddedItems[0] as TabItem;
+            var selectedFilterLabel = selectedTabItem.Header as FilterLabel;
+
+            FilterLabel_ControlSelected(selectedFilterLabel, e);
         }
     }
 

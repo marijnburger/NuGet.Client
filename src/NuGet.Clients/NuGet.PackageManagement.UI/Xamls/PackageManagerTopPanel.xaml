@@ -41,19 +41,19 @@
             Focusable="False" />
           </TabItem.Header>
         </TabItem>
-        <TabItem AutomationProperties.Name="{x:Static nuget:Resources.Label_Installed}">
+        <TabItem Name="tabInstalled" AutomationProperties.Name="{x:Static nuget:Resources.Label_Installed}">
           <TabItem.Header>
             <nuget:FilterLabel
-        Grid.Column="1"
-        x:Name="_labelInstalled"
-        AutomationProperties.AutomationId="Tab_Installed"
-        Filter="Installed"
-        Margin="35,0,0,0"
-        Text="{x:Static nuget:Resources.Label_Installed}">
+            Grid.Column="1"
+            x:Name="_labelInstalled"
+            AutomationProperties.AutomationId="Tab_Installed"
+            Filter="Installed"
+            Margin="35,0,0,0"
+            Text="{x:Static nuget:Resources.Label_Installed}">
             </nuget:FilterLabel>
           </TabItem.Header>
         </TabItem>
-        <TabItem AutomationProperties.Name="{x:Static nuget:Resources.Label_Updates}">
+        <TabItem Name="tabUpdates" AutomationProperties.Name="{x:Static nuget:Resources.Label_Updates}">
           <TabItem.Header>
             <nuget:FilterLabel
             Grid.Column="2"
@@ -65,7 +65,7 @@
             </nuget:FilterLabel>
           </TabItem.Header>
         </TabItem>
-        <TabItem>
+        <TabItem Name="tabConsolidate">
           <TabItem.Header>
             <nuget:FilterLabel
             Grid.Column="3"
