@@ -30,54 +30,12 @@
       </Grid.ColumnDefinitions>
 
       <TabControl x:Name="tabsPackageManagement" IsSynchronizedWithCurrentItem="False" SelectionChanged="TabsPackageManagement_SelectionChanged">
-        <TabItem Name="tabBrowse" AutomationProperties.Name="{x:Static nuget:Resources.Label_Browse}">
-          <TabItem.Header>
-            <nuget:FilterLabel
-            Grid.Column="0"
-            x:Name="_labelBrowse"
-            AutomationProperties.AutomationId="Tab_Browse"
-            Filter="All"
-            Text="{x:Static nuget:Resources.Label_Browse}"
-            Focusable="False" />
-          </TabItem.Header>
-        </TabItem>
-        <TabItem Name="tabInstalled" AutomationProperties.Name="{x:Static nuget:Resources.Label_Installed}">
-          <TabItem.Header>
-            <nuget:FilterLabel
-            Grid.Column="1"
-            x:Name="_labelInstalled"
-            AutomationProperties.AutomationId="Tab_Installed"
-            Filter="Installed"
-            Margin="35,0,0,0"
-            Text="{x:Static nuget:Resources.Label_Installed}">
-            </nuget:FilterLabel>
-          </TabItem.Header>
-        </TabItem>
-        <TabItem Name="tabUpdates" AutomationProperties.Name="{x:Static nuget:Resources.Label_Updates}">
-          <TabItem.Header>
-            <nuget:FilterLabel
-            Grid.Column="2"
-            x:Name="_labelUpgradeAvailable"
-            AutomationProperties.AutomationId="Tab_Updates"
-            Filter="UpdatesAvailable"
-            Margin="35,0,0,0"
-            Text="{x:Static nuget:Resources.Label_Updates}">
-            </nuget:FilterLabel>
-          </TabItem.Header>
-        </TabItem>
-        <TabItem Name="tabConsolidate">
-          <TabItem.Header>
-            <nuget:FilterLabel
-            Grid.Column="3"
-            x:Name="_labelConsolidate"
-            AutomationProperties.AutomationId="Tab_Consolidate"
-            Filter="Consolidate"
-            Margin="35,0,0,0"
-            Text="{x:Static nuget:Resources.Action_Consolidate}"
-            Visibility="Collapsed" />
-          </TabItem.Header>
-        </TabItem>
-        </TabControl>
+        <!--<TabControl.Resources>
+          <DataTemplate x:Key="TabHeader" DataType="TabItem">
+          </DataTemplate>
+        </TabControl.Resources>-->
+
+      </TabControl>
       
       <TextBlock
         x:Name="_label"

@@ -4,7 +4,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
+using Microsoft.Internal.VisualStudio.PlatformUI.Automation;
+using Microsoft.VisualStudio.Text.Utilities.Automation;
+using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,16 +18,81 @@ namespace NuGet.PackageManagement.UI
     public partial class PackageManagerTopPanel : UserControl
     {
         private FilterLabel _selectedFilter;
-
+        public FilterLabel _labelBrowse { get; private set; }
+        public FilterLabel _labelInstalled { get; private set; }
+        public FilterLabel _labelUpgradeAvailable { get; private set; }
+        public FilterLabel _labelConsolidate { get; private set; }
         public PackageManagerTopPanel()
         {
             InitializeComponent();
 
-            //_labelBrowse.Selected = true;
-            _selectedFilter = _labelBrowse;
+            //TODO: tabBrowse.Style = _labelBrowse.Style;
+        }
 
-            //TabControl tc;
-            //tabBrowse.Style = _labelBrowse.Style;
+        private void CreateTabControlTabs()
+        {
+            CreateTabs(ItemFilter.All);
+        }
+
+        private void CreateTabs(ItemFilter filterTabToCreate)
+        {
+            TabItem tabBrowse = new TabItem();
+            tabBrowse.Name = "tabBrowse";
+            tabBrowse.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Label_Browse);
+            _labelBrowse = new FilterLabel()
+            {
+                Name = "_labelBrowse",
+                Filter = ItemFilter.All,
+                Text = Resx.Label_Browse,
+            };
+            //TODO: what is this ID? If needed, add to other FilterLabels.
+            //filterLabelBrowse.SetValue(System.Windows.Automation.AutomationProperties.AutomationIdProperty, "Tab_Browse");
+            tabBrowse.Header = _labelBrowse;
+
+            TabItem tabInstalled = new TabItem();
+            tabInstalled.Name = "tabInstalled";
+            tabInstalled.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Label_Installed);
+            _labelInstalled = new FilterLabel()
+            {
+                Name = "_labelInstalled",
+                Filter = ItemFilter.Installed,
+                Text = Resx.Label_Installed,
+                Margin = new Thickness(35, 0, 0, 0)
+            };
+            tabInstalled.Header = _labelInstalled;
+
+            TabItem tabUpdate = new TabItem();
+            tabUpdate.Name = "tabUpdate";
+            tabUpdate.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Label_Updates);
+            _labelUpgradeAvailable = new FilterLabel()
+            {
+                Name = "_labelUpgradeAvailable",
+                Filter = ItemFilter.UpdatesAvailable,
+                Text = Resx.Label_Updates,
+                Margin = new Thickness(35, 0, 0, 0)
+            };
+            tabUpdate.Header = _labelUpgradeAvailable;
+
+            TabItem tabConsolidate = new TabItem();
+            tabConsolidate.Name = "tabConsolidate";
+            tabConsolidate.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Action_Consolidate);
+            _labelConsolidate = new FilterLabel()
+            {
+                Name = "_labelConsolidate",
+                Filter = ItemFilter.Consolidate,
+                Text = Resx.Action_Consolidate,
+                Margin = new Thickness(35, 0, 0, 0)
+            };
+            tabConsolidate.Header = _labelConsolidate;
+
+
+            tabsPackageManagement.Items.Add(tabBrowse);
+            tabsPackageManagement.Items.Add(tabInstalled);
+            tabsPackageManagement.Items.Add(tabUpdate);
+            if (IsSolution)
+            {
+                tabsPackageManagement.Items.Add(tabConsolidate);
+            }
         }
 
         // the control that is used as container for the search box.
@@ -60,23 +129,24 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 _isSolution = value;
-                if (!_isSolution)
+                if (_labelConsolidate != null)
                 {
-                    // Consolidate tab is only available in solution package manager
-                    _labelConsolidate.Visibility = Visibility.Collapsed;
-                    tabConsolidate.Visibility = Visibility.Collapsed;
-
-                    // if consolidate tab is currently selected, we need to select another
-                    // tab.
-                    if (_selectedFilter == _labelConsolidate)
+                    if (!_isSolution)
                     {
-                        SelectFilter(ItemFilter.Installed);
+                        // Consolidate tab is only available in solution package manager
+                       // _labelConsolidate.Visibility = Visibility.Collapsed;
+
+                        // if consolidate tab is currently selected, we need to select another
+                        // tab.
+                        if (_selectedFilter == _labelConsolidate)
+                        {
+                            SelectFilter(ItemFilter.Installed);
+                        }
                     }
-                }
-                else
-                {
-                    _labelConsolidate.Visibility = Visibility.Visible;
-                    tabConsolidate.Visibility = Visibility.Visible;
+                    else
+                    {
+                        //_labelConsolidate.Visibility = Visibility.Visible;
+                    }
                 }
             }
         }
@@ -168,6 +238,13 @@ namespace NuGet.PackageManagement.UI
             }
 
             //_selectedFilter.Selected = true;
+        }
+
+        public void InitializeTabs()
+        {
+            CreateTabControlTabs();
+            _labelBrowse.Selected = true;
+            _selectedFilter = _labelBrowse; //TODO: null check
         }
 
         private void TabsPackageManagement_SelectionChanged(object sender, SelectionChangedEventArgs e)
