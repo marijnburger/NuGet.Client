@@ -155,6 +155,8 @@ namespace NuGet.Commands
             
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
+            IReadOnlyList<IAssetsLogMessage> projectAdditionalMessages = GetMessagesForProject(restoreArgs.AdditionalMessages, project.PackageSpec.FilePath);
+
             // Create request
             var request = new RestoreRequest(
                 project.PackageSpec,
@@ -168,7 +170,8 @@ namespace NuGet.Commands
                 //  Project.json is special cased to put assets file and generated .props and targets in the project folder
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
-                MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath
+                MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
+                AdditionalMessages = projectAdditionalMessages
             };
             
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
@@ -233,6 +236,26 @@ namespace NuGet.Commands
                     CollectReferences(childProject, allProjects, references);
                 }
             }
+        }
+
+        private static IReadOnlyList<IAssetsLogMessage> GetMessagesForProject(IReadOnlyList<IAssetsLogMessage> allMessages, string projectPath)
+        {
+            List<IAssetsLogMessage> projectAdditionalMessages = null;
+
+            foreach (var message in allMessages)
+            {
+                if (message.ProjectPath == projectPath)
+                {
+                    if (projectAdditionalMessages == null)
+                    {
+                        projectAdditionalMessages = new List<IAssetsLogMessage>();
+                    }
+
+                    projectAdditionalMessages.Add(message);
+                }
+            }
+
+            return projectAdditionalMessages;
         }
     }
 }
