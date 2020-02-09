@@ -117,10 +117,31 @@ namespace NuGet.SolutionRestoreManager
                     $"The nominate API is called for '{projectUniqueName}'.");
 
                 var projectNames = ProjectNames.FromFullProjectPath(projectUniqueName);
+                DependencyGraphSpec dgSpec;
+                IReadOnlyList<IAssetsLogMessage> nominationErrors = null;
+                try
+                {
+                    dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo, projectRestoreInfo2);
+                }
+                catch (Exception e)
+                {
+                    var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1000, "Unable to read project information: " + e.Message);
+                    restoreLogMessage.ProjectPath = projectUniqueName;
 
-                var dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo, projectRestoreInfo2);
+                    nominationErrors = new List<IAssetsLogMessage>()
+                    {
+                        AssetsLogMessage.Create(restoreLogMessage)
+                    };
 
-                _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec);
+                    var projectDirectory = Path.GetDirectoryName(projectUniqueName);
+                    string projectIntermediatePath = projectRestoreInfo == null
+                        ? projectRestoreInfo2.BaseIntermediatePath
+                        : projectRestoreInfo.BaseIntermediatePath;
+                    var dgSpecOutputPath = GetProjectOutputPath(projectDirectory, projectIntermediatePath);
+                    dgSpec = DependencyGraphSpec.CreateMinimal(projectUniqueName, dgSpecOutputPath);
+                }
+
+                _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, nominationErrors);
 
                 // returned task completes when scheduled restore operation completes.
                 var restoreTask = _restoreWorker.ScheduleRestoreAsync(
@@ -136,7 +157,7 @@ namespace NuGet.SolutionRestoreManager
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return Task.FromResult(false);
+                throw;
             }
         }
 
@@ -172,7 +193,7 @@ namespace NuGet.SolutionRestoreManager
 
             var projectFullPath = Path.GetFullPath(projectNames.FullName);
             var projectDirectory = Path.GetDirectoryName(projectFullPath);
-            
+
             // Initialize OTF and CT values when original value of OTF property is not provided.
             var originalTargetFrameworks = tfis
                 .Select(tfi => tfi.FrameworkName.GetShortFolderName())
@@ -188,10 +209,7 @@ namespace NuGet.SolutionRestoreManager
                 crossTargeting = true;
             }
 
-            var outputPath = Path.GetFullPath(
-                                Path.Combine(
-                                    projectDirectory,
-                                    msbuildProjectExtensionsPath));
+            var outputPath = GetProjectOutputPath(projectDirectory, msbuildProjectExtensionsPath);
 
             var projectName = VSNominationUtilities.GetPackageId(projectNames, TargetFrameworks);
 
@@ -230,6 +248,14 @@ namespace NuGet.SolutionRestoreManager
             };
 
             return packageSpec;
+        }
+
+        private static string GetProjectOutputPath(string projectDirectory, string msbuildProjectExtensionsPath)
+        {
+            return Path.GetFullPath(
+                Path.Combine(
+                    projectDirectory,
+                    msbuildProjectExtensionsPath));
         }
     }
 }
