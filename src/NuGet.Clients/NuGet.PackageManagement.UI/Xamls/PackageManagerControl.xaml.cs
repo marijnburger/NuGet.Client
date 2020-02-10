@@ -69,15 +69,6 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerModel Model { get; }
 
-        public static readonly DependencyProperty IsSolutionProperty =
-            DependencyProperty.Register(nameof(IsSolution), typeof(bool), typeof(PackageManagerControl), new FrameworkPropertyMetadata(false));
-
-        public bool IsSolution
-        {
-            get { return (bool)GetValue(IsSolutionProperty); }
-            set { SetValue(IsSolutionProperty, value); }
-        }
-
         public ISettings Settings { get; }
 
         internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
@@ -133,7 +124,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             InitializeComponent();
-            _topPanel.InitializeTabs();
             _windowSearchHostFactory = searchFactory;
             if (_windowSearchHostFactory != null)
             {
@@ -152,7 +142,7 @@ namespace NuGet.PackageManagement.UI
 
             SetTitle();
 
-            _topPanel.IsSolution = Model.IsSolution;
+            _topPanel.ShowConsolidationTab(Model.IsSolution);
             var settings = LoadSettings();
             InitializeFilterList(settings);
             InitSourceRepoList(settings);

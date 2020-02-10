@@ -61,8 +61,7 @@
       SettingsButtonClicked="SettingsButtonClicked"
       FilterChanged="Filter_SelectionChanged"
       PrereleaseCheckChanged="CheckboxPrerelease_CheckChanged"
-      SourceRepoListSelectionChanged="SourceRepoList_SelectionChanged"
-      IsSolution="{Binding IsSolution}"/>
+      SourceRepoListSelectionChanged="SourceRepoList_SelectionChanged"/>
 
     <Border
       DockPanel.Dock="Top"
