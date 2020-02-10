@@ -77,7 +77,6 @@
         TextTrimming="CharacterEllipsis">
         Package Manager
       </TextBlock>
-        
     </Grid>
 
     <!-- search control and include prerelease checkbox -->

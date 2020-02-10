@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI
                 tabsPackageManagement.Items.Add(tabConsolidate);
             }
         }
-        
+
         // the control that is used as container for the search box.
         public Border SearchControlParent => _searchControlParent;
 
@@ -82,16 +82,13 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 _isSolution = value;
-                if (_labelConsolidate != null)
+                if (!_isSolution)
                 {
-                    if (!_isSolution)
+                    // if consolidate tab is currently selected, we need to select another
+                    // tab.
+                    if (_selectedFilter == _labelConsolidate)
                     {
-                        // if consolidate tab is currently selected, we need to select another
-                        // tab.
-                        if (_selectedFilter == _labelConsolidate)
-                        {
-                            SelectFilter(ItemFilter.Installed);
-                        }
+                        SelectFilter(ItemFilter.Installed);
                     }
                 }
             }
@@ -156,11 +153,11 @@ namespace NuGet.PackageManagement.UI
             switch (selectedFilter)
             {
                 case ItemFilter.All:
-                    //_selectedFilter = _labelBrowse;
+                    _selectedFilter = _labelBrowse;
                     break;
 
                 case ItemFilter.Installed:
-                   // _selectedFilter = _labelInstalled;
+                    _selectedFilter = _labelInstalled;
                     break;
 
                 case ItemFilter.UpdatesAvailable:
@@ -180,10 +177,10 @@ namespace NuGet.PackageManagement.UI
             // can be recognized here.
             if (_selectedFilter == null)
             {
-               // _selectedFilter = _labelInstalled;
+                _selectedFilter = _labelInstalled;
             }
 
-            //_selectedFilter.Selected = true;
+            _selectedFilter.Selected = true;
         }
 
         private void TabsPackageManagement_SelectionChanged(object sender, SelectionChangedEventArgs e)
