@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="800">
   <UserControl.Resources>
@@ -42,13 +44,15 @@
                     <Border x:Name="mainBorder" Background="{TemplateBinding Background}" BorderThickness="0" Margin="0">
                     </Border>
                     <ContentPresenter x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+
                   </Grid>
                   <ControlTemplate.Triggers>
                     <MultiDataTrigger>
                       <MultiDataTrigger.Conditions>
                         <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
                       </MultiDataTrigger.Conditions>
-                      <Setter Property="Foreground" Value="Blue" />
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabSelectedTextBrushKey}}" />
+                      <Setter Property="Background" Value="Blue" />
                     </MultiDataTrigger>
                     <MultiDataTrigger>
                       <MultiDataTrigger.Conditions>
@@ -61,11 +65,11 @@
               </Setter.Value>
             </Setter>
           </Style>
-          <Style x:Key="TabControlStyle1" TargetType="{x:Type TabControl}">
+          <Style TargetType="{x:Type TabControl}">
             <Setter Property="Padding" Value="2"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
+            <Setter Property="Template" >
               <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TabControl}">
                   <Grid x:Name="templateRoot" ClipToBounds="true" SnapsToDevicePixels="true" KeyboardNavigation.TabNavigation="Local">
@@ -118,9 +122,11 @@
             </nuget:FilterLabel>
           </TabItem.Header>
         </TabItem>
-        <TabItem Name="tabBrowse2" Tag="All" Header="{x:Static nuget:Resources.Label_Browse}" />
-        <TabItem Name="tabInstalled2" Tag="Installed" Header="{x:Static nuget:Resources.Label_Installed}" />
-        <TabItem Name="tabUpdates2" Tag="UpdatesAvailable" Header="{x:Static nuget:Resources.Label_Updates}" />
+        <TabItem Name="tabBrowse2" Tag="All" Header="{x:Static nuget:Resources.Label_Browse}" FontSize="{Binding FontSize,ElementName=_self,Converter={StaticResource Font122PercentSizeConverter}}" Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
+        <TabItem Name="tabInstalled2" Tag="Installed" Header="{x:Static nuget:Resources.Label_Installed}">
+        </TabItem>
+        <TabItem Name="tabUpdates2" Tag="UpdatesAvailable" Header="{x:Static nuget:Resources.Label_Updates}" >
+        </TabItem>
       </TabControl>
 
       <TextBlock
