@@ -41,10 +41,21 @@
               <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TabItem}">
                   <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="auto" />
+                      <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
                     <Border x:Name="mainBorder" Background="{TemplateBinding Background}" BorderThickness="0" Margin="0">
                     </Border>
-                    <ContentPresenter x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
-                    <!--TODO: Put a rectangle here-->
+                    <ContentPresenter  Grid.Row="0" x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                    <!-- the line under the text to indicate that this label is selected -->
+                    <Rectangle
+                      x:Name="_underline"
+                      Grid.Row="1"
+                      Margin="0"
+                      Height="3"
+                      Visibility="Collapsed"
+                      Fill="{DynamicResource {x:Static nuget:Brushes.TabSelectedBrushKey}}"/>
                   </Grid>
                   <ControlTemplate.Triggers>
                     <MultiDataTrigger>
@@ -52,12 +63,14 @@
                         <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
                       </MultiDataTrigger.Conditions>
                       <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabHoverBrushKey }}" />
+                      <!--TODO: Show the Rectangle (while hoverred)-->
+                      <Setter Property="Visibility" TargetName="_underline" Value="Visible"/>
                     </MultiDataTrigger>
                     <MultiDataTrigger>
                       <MultiDataTrigger.Conditions>
                         <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
                       </MultiDataTrigger.Conditions>
-                      <Setter Property="Foreground" Value="Blue" />
+                      <Setter Property="Foreground" Value="Blue" /> <!--TODO: Show the Rectangle (persistently) -->
                     </MultiDataTrigger>
                   </ControlTemplate.Triggers>
                 </ControlTemplate>

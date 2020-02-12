@@ -71,8 +71,6 @@ namespace NuGet.PackageManagement.UI
 
         public ISettings Settings { get; }
 
-        internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
-
         internal InfiniteScrollList PackageList { get => _packageList; }
 
         internal PackageSourceMoniker SelectedSource
