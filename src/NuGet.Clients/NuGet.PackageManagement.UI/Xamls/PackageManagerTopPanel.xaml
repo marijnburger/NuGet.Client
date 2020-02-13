@@ -35,8 +35,8 @@
         <TabControl.Resources>
           <Style TargetType="TabItem">
             <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.HeaderBackground}}" />
-            <!--<Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />-->
-            <Setter Property="FontSize" Value="14"/> <!--TODO: don't hardcode this size-->
+            <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl},Converter={StaticResource Font122PercentSizeConverter}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
             <Setter Property="Template">
               <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TabItem}">
@@ -60,17 +60,16 @@
                   <ControlTemplate.Triggers>
                     <MultiDataTrigger>
                       <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true"/>
+                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
                       </MultiDataTrigger.Conditions>
                       <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabHoverBrushKey }}" />
-                      <!--TODO: Show the Rectangle (while hoverred)-->
-                      <Setter Property="Visibility" TargetName="_underline" Value="Visible"/>
                     </MultiDataTrigger>
                     <MultiDataTrigger>
                       <MultiDataTrigger.Conditions>
                         <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
                       </MultiDataTrigger.Conditions>
-                      <Setter Property="Foreground" Value="Blue" /> <!--TODO: Show the Rectangle (persistently) -->
+                      <Setter Property="Visibility" TargetName="_underline" Value="Visible" />
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabSelectedTextBrushKey }}" />
                     </MultiDataTrigger>
                   </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -134,11 +133,38 @@
             </nuget:FilterLabel>
           </TabItem.Header>
         </TabItem>
-        <TabItem Name="tabBrowse2" Tag="All" Header="{x:Static nuget:Resources.Label_Browse}"
-                 FontSize="{Binding FontSize,ElementName=_self,Converter={StaticResource Font122PercentSizeConverter}}"/>
-        <TabItem Name="tabInstalled2" Tag="Installed" Header="{x:Static nuget:Resources.Label_Installed}">
+        <TabItem Name="tabBrowse2" Tag="All" Header="{x:Static nuget:Resources.Label_Browse}">
+
         </TabItem>
-        <TabItem Name="tabUpdates2" Tag="UpdatesAvailable" Header="{x:Static nuget:Resources.Label_Updates}" >
+        <TabItem Name="tabInstalled2" Tag="Installed">
+          <AutomationProperties.Name>
+            <MultiBinding StringFormat=" {0}"> <!--TODO: removed {1} {2}-->
+              <Binding ElementName="textInstalled" Path="Text" />
+              <!--<Binding ElementName="_textBlockCount" Path="Text" />
+              <Binding ElementName="_warningIcon" Path="ToolTip" />-->
+            </MultiBinding>
+          </AutomationProperties.Name>
+          <TabItem.Header>
+            <StackPanel>
+              <TextBlock x:Name="textInstalled" Text="{x:Static nuget:Resources.Label_Installed}"></TextBlock>
+              <imaging:CrispImage
+                x:Name="_warningIcon"
+                Margin="3,0"
+                Width="13"
+                Height="13"
+                Visibility="Collapsed"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
+            </StackPanel>
+          </TabItem.Header>
+        </TabItem>
+        <TabItem Name="tabUpdates2" Tag="UpdatesAvailable">
+          <TabItem.Header>
+            <StackPanel>
+              <TextBlock Text="{x:Static nuget:Resources.Label_Updates}"></TextBlock>
+            </StackPanel>
+          </TabItem.Header>
         </TabItem>
       </TabControl>
 
