@@ -101,7 +101,7 @@
           </Style>
         </TabControl.Resources>
 
-        <TabItem Name="tabBrowse" Tag="All" Header="{x:Static nuget:Resources.Label_Browse}"/>
+        <TabItem Name="tabBrowse" Tag="All" Header="{x:Static nuget:Resources.Label_Browse}" IsSelected="True"/>
         <TabItem Name="tabInstalled" Tag="Installed">
           <AutomationProperties.Name>
             <MultiBinding StringFormat=" {0}{1}">
@@ -126,7 +126,7 @@
         </TabItem>
         <TabItem Name="tabUpdates" Tag="UpdatesAvailable">
           <AutomationProperties.Name>
-            <MultiBinding StringFormat=" {0} {1}">
+            <MultiBinding StringFormat=" {0}{1}">
               <Binding ElementName="textUpdates" Path="Text" />
               <Binding ElementName="_countUpdates" Path="Text" />
             </MultiBinding>
@@ -153,6 +153,7 @@
             </StackPanel>
           </TabItem.Header>
         </TabItem>
+        <!--Consolidate tab is added dynamically in code based on certain conditions.-->
       </TabControl>
 
       <TextBlock

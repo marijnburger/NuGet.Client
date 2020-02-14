@@ -2,15 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Media;
 using Microsoft;
-using Microsoft.Internal.VisualStudio.PlatformUI.Automation;
-using Microsoft.VisualStudio.Services.Common.CommandLine;
-using Microsoft.VisualStudio.Text.Utilities.Automation;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
@@ -44,36 +41,60 @@ namespace NuGet.PackageManagement.UI
             if (IsSolution)
             {
                 TabItem tabConsolidate = new TabItem();
-                tabConsolidate.Name = "tabConsolidate";
-                tabConsolidate.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Action_Consolidate);
+                tabConsolidate.Name = nameof(tabConsolidate);
+                tabConsolidate.Tag = "Consolidate";
 
-                //_tabConsolidate = new FilterLabel()
-                //{
-                //    Name = "_labelConsolidate",
-                //    Filter = ItemFilter.Consolidate,
-                //    Text = Resx.Action_Consolidate,
-                //    Margin = new Thickness(35, 0, 0, 0)
-                //};
+                MultiBinding consolidateAutomationPropertiesName = new MultiBinding();
+                consolidateAutomationPropertiesName.StringFormat = string.Concat(Resx.Action_Consolidate, "{0}");
+                consolidateAutomationPropertiesName.Bindings.Add(new Binding() { ElementName = "", Path = new PropertyPath("") });
+                tabConsolidate.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, consolidateAutomationPropertiesName);
+
+
+                StackPanel sp = new StackPanel()
+                {
+                    Orientation = Orientation.Horizontal
+                };
+
+                TextBlock textConsolidate = new TextBlock()
+                {
+                    Name = nameof(textConsolidate),
+                    Text = Resx.Action_Consolidate
+                };
+                sp.Children.Add(textConsolidate);
+
+                //The textblock that displays the count.
+                Border countConsolidateContainer = new Border()
+                {
+                    Name = nameof(countConsolidateContainer),
+                    CornerRadius = new CornerRadius(2),
+                    Margin = new Thickness(3, 0, 3, 0),
+                    Padding = new Thickness(3, 0, 3, 0),
+                    Visibility = Visibility.Collapsed,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                countConsolidateContainer.SetResourceReference(Border.BackgroundProperty, Brushes.TabPopupBrushKey);
+
+                TextBlock textCountConsolidate = new TextBlock()
+                {
+                    Name = nameof(textCountConsolidate),
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                textCountConsolidate.SetResourceReference(TextBlock.ForegroundProperty, Brushes.TabPopupTextBrushKey);
+
+                countConsolidateContainer.Child = textCountConsolidate;
+
+
+
+
+
+
+
                 _tabConsolidate = tabConsolidate;
                 tabConsolidate.Header = _tabConsolidate;
 
-                //TODO: create count control
-              //   < !--the textblock that displays the count-- >
-              //< Border
-              //  x: Name = "_countUpdatesContainer"
-              //  CornerRadius = "2"
-              //  Margin = "3,0"
-              //  Padding = "3,0"
-              //  Visibility = "Collapsed"
-              //  HorizontalAlignment = "Center"
-              //  VerticalAlignment = "Center"
-              //  Background = "{DynamicResource {x:Static nuget:Brushes.TabPopupBrushKey}}" >
-              //  < TextBlock
-              //    x: Name = "_countUpdates"
-              //    HorizontalAlignment = "Right"
-              //    VerticalAlignment = "Top"
-              //    Foreground = "{DynamicResource {x:Static nuget:Brushes.TabPopupTextBrushKey}}" />
-              //</ Border >
+             
 
                 tabsPackageManagement.Items.Add(tabConsolidate);
             }
@@ -136,7 +157,7 @@ namespace NuGet.PackageManagement.UI
         private ItemFilter GetItemFilter(TabItem tabItem)
         {
             Assumes.Present(tabItem);
-            return (ItemFilter)Enum.Parse(typeof(ItemFilter), tabItem.Tag.ToString());
+            return (ItemFilter)Enum.Parse(typeof(ItemFilter), tabItem.Tag as string);
         }
 
         public string Title
