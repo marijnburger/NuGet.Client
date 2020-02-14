@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.UI
 
             SetTitle();
 
-            _topPanel.ShowConsolidationTab(Model.IsSolution);
+            _topPanel.CreateAndAddConsolidateTab(Model.IsSolution);
             var settings = LoadSettings();
             InitializeFilterList(settings);
             InitSourceRepoList(settings);
@@ -760,7 +760,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     // it means selected tab is update itself, so just wait for searchAsyncTask to complete
                     // without making another call to loader to get all packages.
-                    _topPanel._labelUpgradeAvailable.Count = 0;
+                    _topPanel.ShowCountOnUpdatesTab(count: 0);
 
                     var searchResult = await searchResultTask;
                     Model.CachedUpdates = new PackageSearchMetadataCache
@@ -769,7 +769,7 @@ namespace NuGet.PackageManagement.UI
                         IncludePrerelease = IncludePrerelease
                     };
 
-                    _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
+                    _topPanel.ShowCountOnUpdatesTab(count: Model.CachedUpdates.Packages.Count);
                 }
                 else
                 {
@@ -784,8 +784,8 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _topPanel._labelInstalled.ShowWarning = false;
-                _topPanel._labelUpgradeAvailable.Count = 0;
+                _topPanel.ShowWarningOnInstalledTab(installedDeprecatedPackagesCount: 0);
+                _topPanel.ShowCountOnUpdatesTab(count: 0);
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
                 var loader = new PackageItemLoader(
@@ -802,13 +802,7 @@ namespace NuGet.PackageManagement.UI
                     loadContext, metadataProvider, refreshCts.Token);
 
                 var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
-                _topPanel._labelInstalled.ShowWarning = hasInstalledDeprecatedPackages;
-                _topPanel._labelInstalled.WarningToolTip = hasInstalledDeprecatedPackages
-                    ? string.Format(
-                        CultureInfo.CurrentCulture,
-                        Resx.Resources.Label_Installed_DeprecatedWarning,
-                        installedDeprecatedPackagesCount)
-                    : null;
+                _topPanel.ShowWarningOnInstalledTab(installedDeprecatedPackagesCount);
 
                 // Update updates tab count
                 Model.CachedUpdates = new PackageSearchMetadataCache
@@ -817,7 +811,7 @@ namespace NuGet.PackageManagement.UI
                     IncludePrerelease = IncludePrerelease
                 };
 
-                _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
+                _topPanel.ShowCountOnUpdatesTab(count: Model.CachedUpdates.Packages.Count);
             })
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs)));
         }
@@ -854,13 +848,13 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    _topPanel._labelConsolidate.Count = 0;
+                    _topPanel.ShowCountOnConsolidateTab(count: 0);
                     var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                     var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
                     var loader = new PackageItemLoader(
                         loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
-                    _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
+                    _topPanel.ShowCountOnConsolidateTab(count: await loader.GetTotalCountAsync(100, CancellationToken.None));
                 })
                 .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshConsolidatablePackagesCount)));
             }

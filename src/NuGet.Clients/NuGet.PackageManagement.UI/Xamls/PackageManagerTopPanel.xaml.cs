@@ -3,10 +3,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using Microsoft;
 using Microsoft.Internal.VisualStudio.PlatformUI.Automation;
+using Microsoft.VisualStudio.Services.Common.CommandLine;
 using Microsoft.VisualStudio.Text.Utilities.Automation;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
@@ -17,17 +20,26 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageManagerTopPanel : UserControl
     {
-        private FilterLabel _selectedFilter;
-        public FilterLabel _labelConsolidate { get; private set; }
+        private TabItem _selectedTabItem
+        {
+            get
+            {
+                return tabsPackageManagement.SelectedItem as TabItem;
+            }
+            set
+            {
+                tabsPackageManagement.SelectedItem = value;
+            }
+        }
+        public TabItem _tabConsolidate { get; private set; }
+
         public PackageManagerTopPanel()
         {
             InitializeComponent();
-
-            _labelBrowse.Selected = true;
-            _selectedFilter = _labelBrowse;
+            _selectedTabItem = tabBrowse;
         }
 
-        public void ShowConsolidationTab(bool isSolution)
+        public void CreateAndAddConsolidateTab(bool isSolution)
         {
             IsSolution = isSolution;
             if (IsSolution)
@@ -35,16 +47,79 @@ namespace NuGet.PackageManagement.UI
                 TabItem tabConsolidate = new TabItem();
                 tabConsolidate.Name = "tabConsolidate";
                 tabConsolidate.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, Resx.Action_Consolidate);
-                _labelConsolidate = new FilterLabel()
-                {
-                    Name = "_labelConsolidate",
-                    Filter = ItemFilter.Consolidate,
-                    Text = Resx.Action_Consolidate,
-                    Margin = new Thickness(35, 0, 0, 0)
-                };
-                tabConsolidate.Header = _labelConsolidate;
+
+                //_tabConsolidate = new FilterLabel()
+                //{
+                //    Name = "_labelConsolidate",
+                //    Filter = ItemFilter.Consolidate,
+                //    Text = Resx.Action_Consolidate,
+                //    Margin = new Thickness(35, 0, 0, 0)
+                //};
+                _tabConsolidate = tabConsolidate;
+                tabConsolidate.Header = _tabConsolidate;
+
+                //TODO: create count control
+              //   < !--the textblock that displays the count-- >
+              //< Border
+              //  x: Name = "_countUpdatesContainer"
+              //  CornerRadius = "2"
+              //  Margin = "3,0"
+              //  Padding = "3,0"
+              //  Visibility = "Collapsed"
+              //  HorizontalAlignment = "Center"
+              //  VerticalAlignment = "Center"
+              //  Background = "{DynamicResource {x:Static nuget:Brushes.TabPopupBrushKey}}" >
+              //  < TextBlock
+              //    x: Name = "_countUpdates"
+              //    HorizontalAlignment = "Right"
+              //    VerticalAlignment = "Top"
+              //    Foreground = "{DynamicResource {x:Static nuget:Brushes.TabPopupTextBrushKey}}" />
+              //</ Border >
 
                 tabsPackageManagement.Items.Add(tabConsolidate);
+            }
+        }
+
+        public void ShowWarningOnInstalledTab(int installedDeprecatedPackagesCount)
+        {
+            bool hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
+            if (hasInstalledDeprecatedPackages)
+            {
+                _warningIcon.Visibility = Visibility.Visible;
+                _warningIcon.ToolTip = string.Format(
+                        CultureInfo.CurrentCulture,
+                        NuGet.PackageManagement.UI.Resources.Label_Installed_DeprecatedWarning,
+                        installedDeprecatedPackagesCount);
+            }
+            else
+            {
+                _warningIcon.Visibility = Visibility.Collapsed;
+                _warningIcon.ToolTip = null;
+            }
+        }
+
+        public void ShowCountOnConsolidateTab(int count)
+        {
+            if (count > 0)
+            {
+                //TODO: same logic as Updates.
+            }
+            else
+            {
+
+            }
+        }
+
+        public void ShowCountOnUpdatesTab(int count)
+        {
+            if (count > 0)
+            {
+                _countUpdates.Text = count.ToString(CultureInfo.CurrentCulture);
+                _countUpdatesContainer.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _countUpdatesContainer.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -57,7 +132,13 @@ namespace NuGet.PackageManagement.UI
 
         public ToolTip SourceToolTip => _sourceTooltip;
 
-        public ItemFilter Filter => _selectedFilter.Filter;
+        public ItemFilter Filter => GetItemFilter(_selectedTabItem);
+
+        private ItemFilter GetItemFilter(TabItem tabItem)
+        {
+            Assumes.Present(tabItem);
+            return (ItemFilter)Enum.Parse(typeof(ItemFilter), tabItem.Tag.ToString());
+        }
 
         public string Title
         {
@@ -86,7 +167,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     // if consolidate tab is currently selected, we need to select another
                     // tab.
-                    if (_selectedFilter == _labelConsolidate)
+                    if (_selectedTabItem == _tabConsolidate)
                     {
                         SelectFilter(ItemFilter.Installed);
                     }
@@ -114,27 +195,6 @@ namespace NuGet.PackageManagement.UI
             SettingsButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 
-        public void FilterLabel_ControlSelected(object sender, EventArgs e)
-        {
-            var selectedFilter = (FilterLabel)sender;
-            if (selectedFilter == _selectedFilter)
-            {
-                return;
-            }
-
-            if (_selectedFilter != null)
-            {
-                _selectedFilter.Selected = false;
-            }
-
-            var previousFilter = _selectedFilter;
-            _selectedFilter = selectedFilter;
-            if (FilterChanged != null)
-            {
-                FilterChanged(this, new FilterChangedEventArgs(previousFilter?.Filter));
-            }
-        }
-
         public event EventHandler<FilterChangedEventArgs> FilterChanged;
 
         public event EventHandler<EventArgs> SettingsButtonClicked;
@@ -145,29 +205,24 @@ namespace NuGet.PackageManagement.UI
 
         public void SelectFilter(ItemFilter selectedFilter)
         {
-            if (_selectedFilter != null)
-            {
-                _selectedFilter.Selected = false;
-            }
-
             switch (selectedFilter)
             {
                 case ItemFilter.All:
-                    _selectedFilter = _labelBrowse;
+                    _selectedTabItem = tabBrowse;
                     break;
 
                 case ItemFilter.Installed:
-                    _selectedFilter = _labelInstalled;
+                    _selectedTabItem = tabInstalled;
                     break;
 
                 case ItemFilter.UpdatesAvailable:
-                    _selectedFilter = _labelUpgradeAvailable;
+                    _selectedTabItem = tabUpdates;
                     break;
 
                 case ItemFilter.Consolidate:
                     if (_isSolution)
                     {
-                        _selectedFilter = _labelConsolidate;
+                        _selectedTabItem = _tabConsolidate;
                     }
                     break;
             }
@@ -175,20 +230,27 @@ namespace NuGet.PackageManagement.UI
             // _selectedFilter could be null if we are running with a solution with user
             // settings saved by a later version of NuGet that has more filters than
             // can be recognized here.
-            if (_selectedFilter == null)
+            if (_selectedTabItem == null)
             {
-                _selectedFilter = _labelInstalled;
+                _selectedTabItem = tabInstalled;
             }
-
-            _selectedFilter.Selected = true;
         }
 
         private void TabsPackageManagement_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectedTabItem = e.AddedItems[0] as TabItem;
-            var selectedFilterLabel = selectedTabItem.Header as FilterLabel;
+            TabItem previousTabItem = e.RemovedItems.Count > 0 ? e.RemovedItems[0] as TabItem : null;
+            //TabItem selectedTabItem = e.AddedItems.Count > 0 ? e.AddedItems[0] as TabItem : null;
 
-            FilterLabel_ControlSelected(selectedFilterLabel, e);
+            if (previousTabItem != null)
+            {
+                ItemFilter previousFilter = GetItemFilter(previousTabItem);
+                //_selectedTabItem = selectedTabItem; //TODO: this is redundant?
+
+                if (FilterChanged != null)
+                {
+                    FilterChanged(this, new FilterChangedEventArgs(previousFilter));
+                }
+            }
         }
     }
 
