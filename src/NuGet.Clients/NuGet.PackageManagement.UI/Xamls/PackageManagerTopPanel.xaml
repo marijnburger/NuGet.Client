@@ -55,6 +55,8 @@
                       Margin="0"
                       Height="3"
                       Visibility="Collapsed"
+                      Width="{Binding ActualWidth, ElementName=contentPresenter}"
+                      HorizontalAlignment="Center"
                       Fill="{DynamicResource {x:Static nuget:Brushes.TabSelectedBrushKey}}"/>
                   </Grid>
                   <ControlTemplate.Triggers>
@@ -102,7 +104,7 @@
         <TabItem Name="tabBrowse" Tag="All" Header="{x:Static nuget:Resources.Label_Browse}"/>
         <TabItem Name="tabInstalled" Tag="Installed">
           <AutomationProperties.Name>
-            <MultiBinding StringFormat=" {0} {1}">
+            <MultiBinding StringFormat=" {0}{1}">
               <Binding ElementName="textInstalled" Path="Text" />
               <Binding ElementName="_warningIcon" Path="ToolTip" />
             </MultiBinding>
@@ -126,7 +128,7 @@
           <AutomationProperties.Name>
             <MultiBinding StringFormat=" {0} {1}">
               <Binding ElementName="textUpdates" Path="Text" />
-              <Binding ElementName="_textBlockCount" Path="Text" />
+              <Binding ElementName="_countUpdates" Path="Text" />
             </MultiBinding>
           </AutomationProperties.Name>
           <TabItem.Header>

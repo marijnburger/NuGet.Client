@@ -36,7 +36,6 @@ namespace NuGet.PackageManagement.UI
         public PackageManagerTopPanel()
         {
             InitializeComponent();
-            _selectedTabItem = tabBrowse;
         }
 
         public void CreateAndAddConsolidateTab(bool isSolution)
