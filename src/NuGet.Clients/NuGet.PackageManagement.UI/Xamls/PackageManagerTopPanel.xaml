@@ -149,6 +149,7 @@
                   x:Name="_countUpdates"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Top"
+                  FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   Foreground="{DynamicResource {x:Static nuget:Brushes.TabPopupTextBrushKey}}"/>
               </Border>
             </StackPanel>
