@@ -60,11 +60,18 @@ namespace NuGet.PackageManagement.UI
                 };
                 sp.Children.Add(textConsolidate);
 
-                MultiBinding consolidateAutomationPropertiesName = new MultiBinding();
-                consolidateAutomationPropertiesName.StringFormat = string.Concat(" {0}{1}");
-                consolidateAutomationPropertiesName.Bindings.Add(new Binding("Text") { ElementName = nameof(textConsolidate) });
-                consolidateAutomationPropertiesName.Bindings.Add(new Binding("Text") { ElementName = nameof(_countConsolidate) });
-                tabConsolidate.SetBinding(System.Windows.Automation.AutomationProperties.NameProperty, consolidateAutomationPropertiesName);
+                Binding binding = new Binding();
+                binding.Path = new PropertyPath(Resx.Action_Consolidate);
+
+                //MultiBinding consolidateAutomationPropertiesName = new MultiBinding();
+                //consolidateAutomationPropertiesName.StringFormat = " {0}{1}";
+                //consolidateAutomationPropertiesName.Bindings.Add(binding);
+                //consolidateAutomationPropertiesName.Bindings.Add(new Binding("Text") { Source = _countConsolidate });
+                //tabConsolidate.SetBinding(System.Windows.Automation.AutomationProperties.NameProperty, consolidateAutomationPropertiesName);
+
+                //tabConsolidate.SetBinding(System.Windows.Automation.AutomationProperties.NameProperty, binding);
+
+                SetConsolidationAutomationProperties(tabConsolidate, 0);
 
                 //The textblock that displays the count.
                 _countConsolidateContainer = new Border()
@@ -93,6 +100,20 @@ namespace NuGet.PackageManagement.UI
                 _tabConsolidate = tabConsolidate;
                 tabsPackageManagement.Items.Add(tabConsolidate);
             }
+        }
+
+        private void SetConsolidationAutomationProperties(TabItem tabConsolidate, int count)
+        {
+            string automationString = null;
+            if (count > 0)
+            {
+                automationString = string.Format($" {Resx.Action_Consolidate}{count}");
+            }
+            else
+            {
+                automationString = Resx.Action_Consolidate;
+            }
+            tabConsolidate.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, automationString);
         }
 
         public void ShowWarningOnInstalledTab(int installedDeprecatedPackagesCount)
@@ -124,6 +145,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _countConsolidateContainer.Visibility = Visibility.Collapsed;
             }
+            SetConsolidationAutomationProperties(_tabConsolidate, count);
         }
 
         public void ShowCountOnUpdatesTab(int count)
