@@ -47,7 +47,6 @@ namespace NuGet.PackageManagement.UI
                 tabConsolidate.Name = nameof(tabConsolidate);
                 tabConsolidate.Tag = "Consolidate"; //From ItemFilter Enum.
 
-
                 StackPanel sp = new StackPanel()
                 {
                     Orientation = Orientation.Horizontal
@@ -62,14 +61,6 @@ namespace NuGet.PackageManagement.UI
 
                 Binding binding = new Binding();
                 binding.Path = new PropertyPath(Resx.Action_Consolidate);
-
-                //MultiBinding consolidateAutomationPropertiesName = new MultiBinding();
-                //consolidateAutomationPropertiesName.StringFormat = " {0}{1}";
-                //consolidateAutomationPropertiesName.Bindings.Add(binding);
-                //consolidateAutomationPropertiesName.Bindings.Add(new Binding("Text") { Source = _countConsolidate });
-                //tabConsolidate.SetBinding(System.Windows.Automation.AutomationProperties.NameProperty, consolidateAutomationPropertiesName);
-
-                //tabConsolidate.SetBinding(System.Windows.Automation.AutomationProperties.NameProperty, binding);
 
                 SetConsolidationAutomationProperties(tabConsolidate, 0);
 
@@ -107,7 +98,11 @@ namespace NuGet.PackageManagement.UI
             string automationString = null;
             if (count > 0)
             {
-                automationString = string.Format($" {Resx.Action_Consolidate}{count}");
+                automationString = string.Format(
+                    CultureInfo.CurrentCulture,
+                    " {0}{1}",
+                    Resx.Action_Consolidate,
+                    count);
             }
             else
             {
@@ -277,12 +272,10 @@ namespace NuGet.PackageManagement.UI
         private void TabsPackageManagement_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             TabItem previousTabItem = e.RemovedItems.Count > 0 ? e.RemovedItems[0] as TabItem : null;
-            //TabItem selectedTabItem = e.AddedItems.Count > 0 ? e.AddedItems[0] as TabItem : null;
 
             if (previousTabItem != null)
             {
                 ItemFilter previousFilter = GetItemFilter(previousTabItem);
-                //_selectedTabItem = selectedTabItem; //TODO: this is redundant?
 
                 if (FilterChanged != null)
                 {
