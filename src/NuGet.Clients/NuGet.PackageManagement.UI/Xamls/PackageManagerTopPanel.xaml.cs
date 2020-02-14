@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using Microsoft;
+using Microsoft.VisualStudio.PlatformUI;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
@@ -29,6 +30,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
         public TabItem _tabConsolidate { get; private set; }
+        public Border _countConsolidateContainer { get; private set; }
+        public TextBlock _countConsolidate { get; private set; }
 
         public PackageManagerTopPanel()
         {
@@ -42,12 +45,7 @@ namespace NuGet.PackageManagement.UI
             {
                 TabItem tabConsolidate = new TabItem();
                 tabConsolidate.Name = nameof(tabConsolidate);
-                tabConsolidate.Tag = "Consolidate";
-
-                MultiBinding consolidateAutomationPropertiesName = new MultiBinding();
-                consolidateAutomationPropertiesName.StringFormat = string.Concat(Resx.Action_Consolidate, "{0}");
-                consolidateAutomationPropertiesName.Bindings.Add(new Binding() { ElementName = "", Path = new PropertyPath("") });
-                tabConsolidate.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, consolidateAutomationPropertiesName);
+                tabConsolidate.Tag = "Consolidate"; //From ItemFilter Enum.
 
 
                 StackPanel sp = new StackPanel()
@@ -62,10 +60,16 @@ namespace NuGet.PackageManagement.UI
                 };
                 sp.Children.Add(textConsolidate);
 
+                MultiBinding consolidateAutomationPropertiesName = new MultiBinding();
+                consolidateAutomationPropertiesName.StringFormat = string.Concat(" {0}{1}");
+                consolidateAutomationPropertiesName.Bindings.Add(new Binding("Text") { ElementName = nameof(textConsolidate) });
+                consolidateAutomationPropertiesName.Bindings.Add(new Binding("Text") { ElementName = nameof(_countConsolidate) });
+                tabConsolidate.SetBinding(System.Windows.Automation.AutomationProperties.NameProperty, consolidateAutomationPropertiesName);
+
                 //The textblock that displays the count.
-                Border countConsolidateContainer = new Border()
+                _countConsolidateContainer = new Border()
                 {
-                    Name = nameof(countConsolidateContainer),
+                    Name = nameof(_countConsolidateContainer),
                     CornerRadius = new CornerRadius(2),
                     Margin = new Thickness(3, 0, 3, 0),
                     Padding = new Thickness(3, 0, 3, 0),
@@ -73,29 +77,20 @@ namespace NuGet.PackageManagement.UI
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
                 };
-                countConsolidateContainer.SetResourceReference(Border.BackgroundProperty, Brushes.TabPopupBrushKey);
+                _countConsolidateContainer.SetResourceReference(Border.BackgroundProperty, Brushes.TabPopupBrushKey);
+                sp.Children.Add(_countConsolidateContainer);
 
-                TextBlock textCountConsolidate = new TextBlock()
+                _countConsolidate = new TextBlock()
                 {
-                    Name = nameof(textCountConsolidate),
+                    Name = nameof(_countConsolidate),
                     HorizontalAlignment = HorizontalAlignment.Right,
                     VerticalAlignment = VerticalAlignment.Top
                 };
-                textCountConsolidate.SetResourceReference(TextBlock.ForegroundProperty, Brushes.TabPopupTextBrushKey);
+                _countConsolidate.SetResourceReference(TextBlock.ForegroundProperty, Brushes.TabPopupTextBrushKey);
+                _countConsolidateContainer.Child = _countConsolidate;
 
-                countConsolidateContainer.Child = textCountConsolidate;
-
-
-
-
-
-
-
+                tabConsolidate.Header = sp;
                 _tabConsolidate = tabConsolidate;
-                tabConsolidate.Header = _tabConsolidate;
-
-             
-
                 tabsPackageManagement.Items.Add(tabConsolidate);
             }
         }
@@ -122,11 +117,12 @@ namespace NuGet.PackageManagement.UI
         {
             if (count > 0)
             {
-                //TODO: same logic as Updates.
+                _countConsolidate.Text = count.ToString(CultureInfo.CurrentCulture);
+                _countConsolidateContainer.Visibility = Visibility.Visible;
             }
             else
             {
-
+                _countConsolidateContainer.Visibility = Visibility.Collapsed;
             }
         }
 
