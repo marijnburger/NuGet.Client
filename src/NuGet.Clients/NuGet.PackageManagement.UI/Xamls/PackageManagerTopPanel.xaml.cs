@@ -59,9 +59,6 @@ namespace NuGet.PackageManagement.UI
                 };
                 sp.Children.Add(textConsolidate);
 
-                Binding binding = new Binding();
-                binding.Path = new PropertyPath(Resx.Action_Consolidate);
-
                 SetConsolidationAutomationProperties(tabConsolidate, 0);
 
                 //The textblock that displays the count.
@@ -82,10 +79,16 @@ namespace NuGet.PackageManagement.UI
                 {
                     Name = nameof(_countConsolidate),
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    VerticalAlignment = VerticalAlignment.Top
+                    VerticalAlignment = VerticalAlignment.Top,
+                   // FontSize = new Binding( ="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 };
                 _countConsolidate.SetResourceReference(TextBlock.ForegroundProperty, Brushes.TabPopupTextBrushKey);
                 _countConsolidateContainer.Child = _countConsolidate;
+
+                //FontSize needs to match the UserControl.
+                Binding bindingFontSize = new Binding(nameof(TextBlock.FontSize));
+                bindingFontSize.RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(UserControl), ancestorLevel: 1);
+                BindingOperations.SetBinding(_countConsolidate, TextBlock.FontSizeProperty, bindingFontSize);
 
                 tabConsolidate.Header = sp;
                 _tabConsolidate = tabConsolidate;
