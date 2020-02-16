@@ -218,9 +218,7 @@ namespace NuGet.ProjectModel
 
         public static DependencyGraphSpec Load(string path)
         {
-            var json = ReadJson(path);
-
-            return Load(json);
+            return Load(path, useImprovedReader: true);
         }
 
         public static DependencyGraphSpec Load(JObject json)
@@ -236,6 +234,74 @@ namespace NuGet.ProjectModel
             using (var textWriter = new StreamWriter(fileStream))
             {
                 textWriter.Write(json);
+            }
+        }
+
+        internal static DependencyGraphSpec Load(string path, bool useImprovedReader)
+        {
+            if (useImprovedReader)
+            {
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var streamReader = new StreamReader(stream))
+                using (var jsonReader = new JsonTextReader(streamReader))
+                {
+                    var dgspec = new DependencyGraphSpec();
+                    int? format = null;
+                    bool wasObjectRead;
+
+                    try
+                    {
+                        wasObjectRead = jsonReader.ReadObject(propertyName =>
+                        {
+                            switch (propertyName)
+                            {
+                                case "format":
+                                    format = jsonReader.ReadAsInt32();
+                                    break;
+
+                                case "restore":
+                                    jsonReader.ReadObject(restorePropertyName =>
+                                    {
+                                        if (!string.IsNullOrEmpty(restorePropertyName))
+                                        {
+                                            dgspec._restore.Add(restorePropertyName);
+                                        }
+                                    });
+                                    break;
+
+                                case "projects":
+                                    jsonReader.ReadObject(projectsPropertyName =>
+                                    {
+                                        PackageSpec packageSpec = MemoryEfficientJsonPackageSpecReader.GetPackageSpec(jsonReader, path);
+
+                                        dgspec._projects.Add(projectsPropertyName, packageSpec);
+                                    });
+                                    break;
+
+                                default:
+                                    jsonReader.Skip();
+                                    break;
+                            }
+                        });
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        throw FileFormatException.Create(ex, path);
+                    }
+
+                    if (!wasObjectRead || jsonReader.TokenType != JsonToken.EndObject)
+                    {
+                        throw new InvalidDataException();
+                    }
+
+                    return dgspec;
+                }
+            }
+            else
+            {
+                JObject json = ReadJson(path);
+
+                return Load(json);
             }
         }
 

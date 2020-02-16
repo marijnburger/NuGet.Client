@@ -907,9 +907,11 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
+                        JToken token = dependencyVersionToken ?? dependency;
+
                         throw FileFormatException.Create(
                             "The version cannot be null or empty",
-                            dependencyVersionToken,
+                            token,
                             packageSpecPath);
                     }
                 }

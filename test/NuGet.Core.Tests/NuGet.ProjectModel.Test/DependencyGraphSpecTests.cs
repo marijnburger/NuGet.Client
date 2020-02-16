@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -17,11 +18,17 @@ namespace NuGet.ProjectModel.Test
 {
     public class DependencyGraphSpecTests
     {
+        private const string Project1Json = "project1.json";
+        private const string Project2Json = "project2.json";
+        private const string Test1Dg = "test1.dg";
+        private const string Test2Dg = "test2.dg";
+        private const string Test3Dg = "test3.dg";
+
         [Fact]
-        public void DependencyGraphSpec_GetParents()
+        public void GetParents_WhenCalledOnChild_ReturnsParents()
         {
             // Arrange
-            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test1.dg", typeof(DependencyGraphSpecTests)));
+            JObject json = GetResourceAsJObject(Test1Dg);
 
             // Act
             var dg = DependencyGraphSpec.Load(json);
@@ -40,10 +47,10 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_ReadFileWithProjects_GetClosures()
+        public void GetClosure_WhenClosureExists_ReturnsClosure()
         {
             // Arrange
-            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test1.dg", typeof(DependencyGraphSpecTests)));
+            JObject json = GetResourceAsJObject(Test1Dg);
 
             // Act
             var dg = DependencyGraphSpec.Load(json);
@@ -66,10 +73,10 @@ namespace NuGet.ProjectModel.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void DependencyGraphSpec_ReadFileWithProjects_CaseInsensitive_GetClosures()
+        public void GetClosure_WhenClosureExistsCaseInsensitively_ReturnsClosure()
         {
             // Arrange
-            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test3.dg", typeof(DependencyGraphSpecTests)));
+            JObject json = GetResourceAsJObject(Test3Dg);
 
             // Act
             var dg = DependencyGraphSpec.Load(json);
@@ -88,10 +95,10 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_ProjectsWithToolReferences_GetClosures()
+        public void GetClosure_WhenProjectHasToolReferences_ReturnsClosure()
         {
             // Arrange
-            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test2.dg", typeof(DependencyGraphSpecTests)));
+            JObject json = GetResourceAsJObject(Test2Dg);
             var childProject = @"f:\validation\test\dg\Project.Core\Project.Core\Project.Core.csproj";
             var parentProject = @"f:\validation\test\dg\Project.Core\Project\Project.csproj";
             var tool = @"atool-netcoreapp2.0-[1.0.0, )";
@@ -116,7 +123,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_ReadEmptyJObject()
+        public void Constructor_WhenJsonIsEmptyObject_CreatesEmptyDgSpec()
         {
             // Arrange
             var json = new JObject();
@@ -130,7 +137,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_ReadEmpty()
+        public void DefaultConstructor_Always_CreatesEmptyDgSpec()
         {
             // Arrange && Act
             var dg = new DependencyGraphSpec();
@@ -143,11 +150,32 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData("")]
         [InlineData("[]")]
-        public void Load_WithPath_WhenJsonIsInvalid_Throws(string json)
+        public void Load_WithPath_WhenJsonIsInvalidDgSpec_Throws(string json)
         {
-            using (var test = Test.Create(json))
+            using (Test test = Test.Create(json))
             {
-                Assert.Throws<InvalidDataException>(() => DependencyGraphSpec.Load(test.FilePath));
+                InvalidDataException baselineException = Assert.Throws<InvalidDataException>(
+                    () => DependencyGraphSpec.Load(test.FilePath, useImprovedReader: false));
+                InvalidDataException improvedException = Assert.Throws<InvalidDataException>(
+                    () => DependencyGraphSpec.Load(test.FilePath, useImprovedReader: true));
+
+                Assert.Equal(baselineException.Message, improvedException.Message);
+                Assert.Null(baselineException.InnerException);
+                Assert.Null(improvedException.InnerException);
+            }
+        }
+
+        [Theory]
+        [InlineData("{}{}")]
+        [InlineData("{}[]")]
+        public void Load_WithPath_WhenJsonContainsMultipleTopLevelEntities_IgnoresNonFirstEntities(string json)
+        {
+            using (Test test = Test.Create(json))
+            {
+                DependencyGraphSpec baselineDgSpec = DependencyGraphSpec.Load(test.FilePath, useImprovedReader: false);
+                DependencyGraphSpec improvedDgSpec = DependencyGraphSpec.Load(test.FilePath, useImprovedReader: true);
+
+                Assert.Equal(baselineDgSpec.GetHash(), improvedDgSpec.GetHash());
             }
         }
 
@@ -159,7 +187,7 @@ namespace NuGet.ProjectModel.Test
 {
 }";
 
-            using (var test = Test.Create(json))
+            using (Test test = Test.Create(json))
             { 
                 DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
 
@@ -167,11 +195,36 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
+        [Theory]
+        [InlineData(Test1Dg)]
+        [InlineData(Test2Dg)]
+        [InlineData(Test3Dg)]
+        public void Load_WithPath_WhenJsonIsValid_ReturnsDgSpec(string fileName)
+        {
+            string json = GetResourceAsJson(fileName);
+
+            using (Test test = Test.Create(json))
+            {
+                DependencyGraphSpec baseline = DependencyGraphSpec.Load(test.FilePath, useImprovedReader: false);
+                DependencyGraphSpec improved = DependencyGraphSpec.Load(test.FilePath, useImprovedReader: true);
+
+                string baselineJson = GetJson(baseline);
+                string improvedJson = GetJson(improved);
+
+                Assert.Equal(baselineJson, improvedJson);
+
+                string baselineHash = baseline.GetHash();
+                string improvedHash = improved.GetHash();
+
+                Assert.Equal(baselineHash, improvedHash);
+            }
+        }
+
         [Fact]
         public void DependencyGraphSpec_ReadMSBuildMetadata()
         {
             // Arrange
-            var json = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.project1.json", typeof(DependencyGraphSpecTests));
+            string json = GetResourceAsJson(Project1Json);
 
             // Act
             var spec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
@@ -197,7 +250,7 @@ namespace NuGet.ProjectModel.Test
         public void DependencyGraphSpec_ReadMSBuildMetadata_WithProperDefaults()
         {
             // Arrange
-            var json = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.project2.json", typeof(DependencyGraphSpecTests));
+            string json = GetResourceAsJson(Project2Json);
 
             // Act
             var spec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
@@ -416,11 +469,11 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_Save_SerializesMembersAsJson()
+        public void Save_WithNonEmptyDgSpec_SerializesCorrectly()
         {
-            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.DependencyGraphSpec_Save_SerializesMembersAsJson.json", typeof(DependencyGraphSpecTests));
-            var dependencyGraphSpec = CreateDependencyGraphSpec();
-            var actualJson = GetJson(dependencyGraphSpec);
+            string expectedJson = GetResourceAsJson("DependencyGraphSpec_Save_SerializesMembersAsJson.json");
+            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpec();
+            string actualJson = GetJson(dependencyGraphSpec);
 
             Assert.Equal(expectedJson, actualJson);
         }
@@ -442,7 +495,7 @@ namespace NuGet.ProjectModel.Test
 
         private static string GetJson(DependencyGraphSpec dgSpec)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (TestDirectory testDirectory = TestDirectory.Create())
             {
                 var filePath = Path.Combine(testDirectory.Path, "out.json");
 
@@ -450,6 +503,20 @@ namespace NuGet.ProjectModel.Test
 
                 return File.ReadAllText(filePath);
             }
+        }
+
+        private static JObject GetResourceAsJObject(string fileName)
+        {
+            string json = GetResourceAsJson(fileName);
+
+            return JObject.Parse(json);
+        }
+
+        private static string GetResourceAsJson(string fileName)
+        {
+            var resourceName = $"NuGet.ProjectModel.Test.compiler.resources.{fileName}";
+
+            return ResourceTestUtility.GetResource(resourceName, typeof(DependencyGraphSpecTests));
         }
 
         private sealed class Test : IDisposable
